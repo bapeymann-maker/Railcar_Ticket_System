@@ -201,7 +201,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         /* Login Screen Styles */
@@ -744,9 +744,14 @@
 
         async function login() {
             console.log('Login function called');
+            const loginBtn = event.target;
             const password = document.getElementById('loginPassword').value;
             console.log('Password entered:', password);
             const errorDiv = document.getElementById('loginError');
+            
+            // Show loading state
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
             
             if (password === APP_PASSWORD) {
                 console.log('Password correct, logging in...');
@@ -759,6 +764,8 @@
                 errorDiv.textContent = 'Incorrect password';
                 errorDiv.classList.remove('hidden');
                 document.getElementById('loginPassword').value = '';
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
             }
         }
 
@@ -772,8 +779,25 @@
         }
 
         function showMainApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
+            console.log('showMainApp called');
+            const loginScreen = document.getElementById('loginScreen');
+            const mainApp = document.getElementById('mainApp');
+            console.log('loginScreen element:', loginScreen);
+            console.log('mainApp element:', mainApp);
+            
+            if (loginScreen) {
+                loginScreen.classList.add('hidden');
+                console.log('Login screen hidden');
+            } else {
+                console.error('loginScreen element not found!');
+            }
+            
+            if (mainApp) {
+                mainApp.classList.remove('hidden');
+                console.log('Main app shown');
+            } else {
+                console.error('mainApp element not found!');
+            }
         }
 
         // Submit ticket
