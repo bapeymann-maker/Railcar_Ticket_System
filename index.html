@@ -671,7 +671,17 @@
         // Supabase Configuration
         const SUPABASE_URL = 'https://dphuvdhxxsuqxomcvvjd.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaHV2ZGh4eHN1cXhvbWN2dmpkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTc4OTU5OSwiZXhwIjoyMDg1MzY1NTk5fQ.42ozaR4mkqSp6l57JjpduRUWA-zXOYkNu3kTIdiGK_E';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabaseClient = null;
+
+        // Initialize Supabase when library is loaded
+        function initSupabase() {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('Supabase initialized');
+            } else {
+                console.error('Supabase library not loaded');
+            }
+        }
 
         // Authentication
         const APP_PASSWORD = 'ufer2025'; // Change this to your desired password
@@ -679,6 +689,9 @@
 
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Supabase
+            initSupabase();
+
             // Check if already logged in
             const session = localStorage.getItem('session:active');
             if (session === 'true') {
@@ -730,15 +743,19 @@
         });
 
         async function login() {
+            console.log('Login function called');
             const password = document.getElementById('loginPassword').value;
+            console.log('Password entered:', password);
             const errorDiv = document.getElementById('loginError');
             
             if (password === APP_PASSWORD) {
+                console.log('Password correct, logging in...');
                 localStorage.setItem('session:active', 'true');
                 isLoggedIn = true;
                 errorDiv.classList.add('hidden');
                 showMainApp();
             } else {
+                console.log('Password incorrect');
                 errorDiv.textContent = 'Incorrect password';
                 errorDiv.classList.remove('hidden');
                 document.getElementById('loginPassword').value = '';
@@ -799,7 +816,7 @@
             };
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('tickets')
                     .insert([ticket])
                     .select();
@@ -839,7 +856,7 @@
             ticketList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Loading tickets...</p>';
             
             try {
-                const { data: tickets, error } = await supabase
+                const { data: tickets, error } = await supabaseClient
                     .from('tickets')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -883,7 +900,7 @@
         // View ticket details
         async function viewTicket(ticketId) {
             try {
-                const { data: ticket, error } = await supabase
+                const { data: ticket, error } = await supabaseClient
                     .from('tickets')
                     .select('*')
                     .eq('id', ticketId)
@@ -1004,7 +1021,7 @@
                 };
                 
                 try {
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('documents')
                         .insert([doc]);
 
@@ -1023,7 +1040,7 @@
         // Load documents
         async function loadDocuments(ticketId) {
             try {
-                const { data: docs, error } = await supabase
+                const { data: docs, error } = await supabaseClient
                     .from('documents')
                     .select('*')
                     .eq('ticket_id', ticketId)
@@ -1071,7 +1088,7 @@
             
             try {
                 // Delete associated documents first
-                const { error: docError } = await supabase
+                const { error: docError } = await supabaseClient
                     .from('documents')
                     .delete()
                     .eq('ticket_id', ticketId);
@@ -1079,7 +1096,7 @@
                 if (docError) console.error('Error deleting documents:', docError);
 
                 // Delete ticket
-                const { error: ticketError } = await supabase
+                const { error: ticketError } = await supabaseClient
                     .from('tickets')
                     .delete()
                     .eq('id', ticketId);
