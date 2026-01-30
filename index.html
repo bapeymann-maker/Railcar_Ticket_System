@@ -677,13 +677,56 @@
         const APP_PASSWORD = 'ufer2025'; // Change this to your desired password
         let isLoggedIn = false;
 
-        // Check if already logged in
-        window.addEventListener('load', async function() {
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
             const session = localStorage.getItem('session:active');
             if (session === 'true') {
                 isLoggedIn = true;
                 showMainApp();
             }
+
+            // Setup event listeners
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Photo preview handlers
+            ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior'].forEach(id => {
+                document.getElementById(id).addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const preview = document.getElementById('preview' + id.replace('photo', ''));
+                            preview.src = event.target.result;
+                            preview.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+
+            // Mode toggle
+            document.getElementById('mobileBtn').addEventListener('click', function() {
+                document.getElementById('mobileMode').classList.remove('hidden');
+                document.getElementById('adminMode').classList.add('hidden');
+                this.classList.add('active');
+                document.getElementById('adminBtn').classList.remove('active');
+            });
+
+            document.getElementById('adminBtn').addEventListener('click', function() {
+                document.getElementById('adminMode').classList.remove('hidden');
+                document.getElementById('mobileMode').classList.add('hidden');
+                this.classList.add('active');
+                document.getElementById('mobileBtn').classList.remove('active');
+                loadTickets();
+            });
+
+            // Close modal on outside click
+            document.getElementById('ticketModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
         });
 
         async function login() {
@@ -715,40 +758,6 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
         }
-
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-
-        // Photo preview handlers
-        ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior'].forEach(id => {
-            document.getElementById(id).addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const preview = document.getElementById('preview' + id.replace('photo', ''));
-                        preview.src = event.target.result;
-                        preview.classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        });
-
-        // Mode toggle
-        document.getElementById('mobileBtn').addEventListener('click', function() {
-            document.getElementById('mobileMode').classList.remove('hidden');
-            document.getElementById('adminMode').classList.add('hidden');
-            this.classList.add('active');
-            document.getElementById('adminBtn').classList.remove('active');
-        });
-
-        document.getElementById('adminBtn').addEventListener('click', function() {
-            document.getElementById('adminMode').classList.remove('hidden');
-            document.getElementById('mobileMode').classList.add('hidden');
-            this.classList.add('active');
-            document.getElementById('mobileBtn').classList.remove('active');
-            loadTickets();
-        });
 
         // Submit ticket
         async function submitTicket() {
@@ -1089,13 +1098,6 @@
         function closeModal() {
             document.getElementById('ticketModal').classList.add('hidden');
         }
-
-        // Close modal on outside click
-        document.getElementById('ticketModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
     </script>
     </div>
 </body>
