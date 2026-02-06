@@ -204,6 +204,42 @@
             display: none !important;
         }
 
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
         /* Login Screen Styles */
         .login-screen {
             position: fixed;
@@ -612,32 +648,74 @@
             <h2>Photographs</h2>
             <div class="photo-section">
                 <div class="photo-upload" onclick="document.getElementById('photoHopper1').click()">
-                    <input type="file" id="photoHopper1" accept="image/*" capture="environment">
+                    <input type="file" id="photoHopper1" accept="image/*">
                     <div class="photo-label">Hopper 1</div>
                     <div class="upload-icon">📷</div>
-                    <div>Tap to capture</div>
+                    <div>Tap to upload</div>
                     <img id="previewHopper1" class="photo-preview hidden">
                 </div>
                 <div class="photo-upload" onclick="document.getElementById('photoHopper2').click()">
-                    <input type="file" id="photoHopper2" accept="image/*" capture="environment">
+                    <input type="file" id="photoHopper2" accept="image/*">
                     <div class="photo-label">Hopper 2</div>
                     <div class="upload-icon">📷</div>
-                    <div>Tap to capture</div>
+                    <div>Tap to upload</div>
                     <img id="previewHopper2" class="photo-preview hidden">
                 </div>
                 <div class="photo-upload" onclick="document.getElementById('photoHopper3').click()">
-                    <input type="file" id="photoHopper3" accept="image/*" capture="environment">
+                    <input type="file" id="photoHopper3" accept="image/*">
                     <div class="photo-label">Hopper 3</div>
                     <div class="upload-icon">📷</div>
-                    <div>Tap to capture</div>
+                    <div>Tap to upload</div>
                     <img id="previewHopper3" class="photo-preview hidden">
                 </div>
                 <div class="photo-upload" onclick="document.getElementById('photoExterior').click()">
-                    <input type="file" id="photoExterior" accept="image/*" capture="environment">
+                    <input type="file" id="photoExterior" accept="image/*">
                     <div class="photo-label">Exterior</div>
                     <div class="upload-icon">📷</div>
-                    <div>Tap to capture</div>
+                    <div>Tap to upload</div>
                     <img id="previewExterior" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoScale1').click()">
+                    <input type="file" id="photoScale1" accept="image/*">
+                    <div class="photo-label">Scale Ticket 1</div>
+                    <div class="upload-icon">📄</div>
+                    <div>Tap to upload</div>
+                    <img id="previewScale1" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoScale2').click()">
+                    <input type="file" id="photoScale2" accept="image/*">
+                    <div class="photo-label">Scale Ticket 2</div>
+                    <div class="upload-icon">📄</div>
+                    <div>Tap to upload</div>
+                    <img id="previewScale2" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoScale3').click()">
+                    <input type="file" id="photoScale3" accept="image/*">
+                    <div class="photo-label">Scale Ticket 3</div>
+                    <div class="upload-icon">📄</div>
+                    <div>Tap to upload</div>
+                    <img id="previewScale3" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoScale4').click()">
+                    <input type="file" id="photoScale4" accept="image/*">
+                    <div class="photo-label">Scale Ticket 4 <span style="font-size: 0.8rem; color: #7f8c8d;">(Optional)</span></div>
+                    <div class="upload-icon">📄</div>
+                    <div>Tap to upload</div>
+                    <img id="previewScale4" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoScale5').click()">
+                    <input type="file" id="photoScale5" accept="image/*">
+                    <div class="photo-label">Scale Ticket 5 <span style="font-size: 0.8rem; color: #7f8c8d;">(Optional)</span></div>
+                    <div class="upload-icon">📄</div>
+                    <div>Tap to upload</div>
+                    <img id="previewScale5" class="photo-preview hidden">
+                </div>
+                <div class="photo-upload" onclick="document.getElementById('photoAffidavit').click()">
+                    <input type="file" id="photoAffidavit" accept="image/*">
+                    <div class="photo-label">Clean Car Affidavit</div>
+                    <div class="upload-icon">📋</div>
+                    <div>Tap to upload</div>
+                    <img id="previewAffidavit" class="photo-preview hidden">
                 </div>
             </div>
         </div>
@@ -665,6 +743,12 @@
             </div>
             <div id="modalBody"></div>
         </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Uploading ticket...</div>
     </div>
 
     <script>
@@ -703,7 +787,8 @@
             document.getElementById('logoutBtn').addEventListener('click', logout);
 
             // Photo preview handlers
-            ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior'].forEach(id => {
+            ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior', 
+             'photoScale1', 'photoScale2', 'photoScale3', 'photoScale4', 'photoScale5', 'photoAffidavit'].forEach(id => {
                 document.getElementById(id).addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
@@ -809,6 +894,9 @@
                 return;
             }
 
+            // Show loading overlay
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
             const ticket = {
                 rail_car_number: railCarNumber,
                 ld_lmt: document.getElementById('ldLmt').value || null,
@@ -836,6 +924,12 @@
                 photo_hopper2: document.getElementById('previewHopper2').src || null,
                 photo_hopper3: document.getElementById('previewHopper3').src || null,
                 photo_exterior: document.getElementById('previewExterior').src || null,
+                photo_scale1: document.getElementById('previewScale1').src || null,
+                photo_scale2: document.getElementById('previewScale2').src || null,
+                photo_scale3: document.getElementById('previewScale3').src || null,
+                photo_scale4: document.getElementById('previewScale4').src || null,
+                photo_scale5: document.getElementById('previewScale5').src || null,
+                photo_affidavit: document.getElementById('previewAffidavit').src || null,
                 created_at: new Date().toISOString()
             };
 
@@ -847,6 +941,9 @@
 
                 if (error) throw error;
                 
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
                 // Show success message
                 const successDiv = document.createElement('div');
                 successDiv.className = 'success-message';
@@ -857,6 +954,9 @@
                 
                 clearForm();
             } catch (error) {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
                 console.error('Error saving ticket:', error);
                 alert('Error saving ticket: ' + error.message);
             }
@@ -868,7 +968,8 @@
                 input.value = '';
             });
             
-            ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior'].forEach(id => {
+            ['photoHopper1', 'photoHopper2', 'photoHopper3', 'photoExterior',
+             'photoScale1', 'photoScale2', 'photoScale3', 'photoScale4', 'photoScale5', 'photoAffidavit'].forEach(id => {
                 document.getElementById(id).value = '';
                 document.getElementById('preview' + id.replace('photo', '')).classList.add('hidden');
             });
@@ -893,7 +994,10 @@
                 }
                 
                 ticketList.innerHTML = tickets.map(ticket => {
-                    const photoCount = [ticket.photo_hopper1, ticket.photo_hopper2, ticket.photo_hopper3, ticket.photo_exterior].filter(p => p).length;
+                    const photoCount = [ticket.photo_hopper1, ticket.photo_hopper2, ticket.photo_hopper3, 
+                                       ticket.photo_exterior, ticket.photo_scale1, ticket.photo_scale2,
+                                       ticket.photo_scale3, ticket.photo_scale4, ticket.photo_scale5, 
+                                       ticket.photo_affidavit].filter(p => p).length;
                     return `
                         <div class="ticket-card" onclick="viewTicket(${ticket.id})">
                             <div class="ticket-header">
@@ -908,7 +1012,7 @@
                                     <span class="detail-label">LT WT:</span> ${ticket.lt_wt || 'N/A'}
                                 </div>
                                 <div class="detail-item">
-                                    <span class="detail-label">Photos:</span> ${photoCount}/4
+                                    <span class="detail-label">Photos:</span> ${photoCount}/10
                                 </div>
                             </div>
                         </div>
@@ -998,6 +1102,42 @@
                                 <div class="photo-item">
                                     <img src="${ticket.photo_exterior}" alt="Exterior">
                                     <p>Exterior</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_scale1 ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_scale1}" alt="Scale Ticket 1">
+                                    <p>Scale Ticket 1</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_scale2 ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_scale2}" alt="Scale Ticket 2">
+                                    <p>Scale Ticket 2</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_scale3 ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_scale3}" alt="Scale Ticket 3">
+                                    <p>Scale Ticket 3</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_scale4 ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_scale4}" alt="Scale Ticket 4">
+                                    <p>Scale Ticket 4 (Optional)</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_scale5 ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_scale5}" alt="Scale Ticket 5">
+                                    <p>Scale Ticket 5 (Optional)</p>
+                                </div>
+                            ` : ''}
+                            ${ticket.photo_affidavit ? `
+                                <div class="photo-item">
+                                    <img src="${ticket.photo_affidavit}" alt="Clean Car Affidavit">
+                                    <p>Clean Car Affidavit</p>
                                 </div>
                             ` : ''}
                         </div>
