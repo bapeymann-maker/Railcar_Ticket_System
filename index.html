@@ -986,19 +986,26 @@
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
                 
                 if (!tickets || tickets.length === 0) {
                     ticketList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No tickets found</p>';
                     return;
                 }
                 
-                ticketList.innerHTML = tickets.map(ticket => {
-                    const photoCount = [ticket.photo_hopper1, ticket.photo_hopper2, ticket.photo_hopper3, 
-                                       ticket.photo_exterior, ticket.photo_scale1, ticket.photo_scale2,
-                                       ticket.photo_scale3, ticket.photo_scale4, ticket.photo_scale5, 
-                                       ticket.photo_affidavit].filter(p => p).length;
-                    return `
+                let html = '';
+                for (const ticket of tickets) {
+                    const photoCount = [
+                        ticket.photo_hopper1, ticket.photo_hopper2, ticket.photo_hopper3, 
+                        ticket.photo_exterior, ticket.photo_scale1, ticket.photo_scale2,
+                        ticket.photo_scale3, ticket.photo_scale4, ticket.photo_scale5, 
+                        ticket.photo_affidavit
+                    ].filter(p => p).length;
+                    
+                    html += `
                         <div class="ticket-card" onclick="viewTicket(${ticket.id})">
                             <div class="ticket-header">
                                 <div class="ticket-number">Rail Car #${ticket.rail_car_number}</div>
@@ -1017,11 +1024,13 @@
                             </div>
                         </div>
                     `;
-                }).join('');
+                }
+                
+                ticketList.innerHTML = html;
                 
             } catch (error) {
-                ticketList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading tickets: ' + error.message + '</p>';
                 console.error('Load error:', error);
+                ticketList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading tickets. Please try again.</p>';
             }
         }
 
