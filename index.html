@@ -1157,6 +1157,7 @@
                     </div>
 
                     <button class="btn btn-danger" onclick="deleteTicket(${ticketId})">Delete Ticket</button>
+                    <button class="btn btn-primary" onclick="editTicket(${ticketId})">Edit Ticket</button>
                 `;
                 
                 // Load existing documents
@@ -1167,6 +1168,212 @@
                 console.error('Error viewing ticket:', error);
                 alert('Error loading ticket details: ' + error.message);
             }
+        }
+
+        // Edit ticket - populate form and switch to mobile mode
+        async function editTicket(ticketId) {
+            try {
+                const { data: ticket, error } = await supabaseClient
+                    .from('tickets')
+                    .select('*')
+                    .eq('id', ticketId)
+                    .single();
+
+                if (error) throw error;
+                
+                // Close modal
+                closeModal();
+                
+                // Switch to mobile mode
+                document.getElementById('adminMode').classList.add('hidden');
+                document.getElementById('mobileMode').classList.remove('hidden');
+                document.getElementById('adminBtn').classList.remove('active');
+                document.getElementById('mobileBtn').classList.add('active');
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+                // Populate all fields
+                document.getElementById('railCarNumber').value = ticket.rail_car_number || '';
+                document.getElementById('ldLmt').value = ticket.ld_lmt || '';
+                document.getElementById('ltWt').value = ticket.lt_wt || '';
+                
+                // Load weights
+                document.getElementById('load1Full').value = ticket.load1_full || '';
+                document.getElementById('load1Empty').value = ticket.load1_empty || '';
+                document.getElementById('load2Full').value = ticket.load2_full || '';
+                document.getElementById('load2Empty').value = ticket.load2_empty || '';
+                document.getElementById('load3Full').value = ticket.load3_full || '';
+                document.getElementById('load3Empty').value = ticket.load3_empty || '';
+                document.getElementById('load4Full').value = ticket.load4_full || '';
+                document.getElementById('load4Empty').value = ticket.load4_empty || '';
+                document.getElementById('load5Full').value = ticket.load5_full || '';
+                document.getElementById('load5Empty').value = ticket.load5_empty || '';
+                
+                // Hopper seals
+                document.getElementById('hopper1Top1').value = ticket.hopper1_top1 || '';
+                document.getElementById('hopper1Top2').value = ticket.hopper1_top2 || '';
+                document.getElementById('hopper1Bottom').value = ticket.hopper1_bottom || '';
+                document.getElementById('hopper2Top1').value = ticket.hopper2_top1 || '';
+                document.getElementById('hopper2Top2').value = ticket.hopper2_top2 || '';
+                document.getElementById('hopper2Bottom').value = ticket.hopper2_bottom || '';
+                document.getElementById('hopper3Top1').value = ticket.hopper3_top1 || '';
+                document.getElementById('hopper3Top2').value = ticket.hopper3_top2 || '';
+                document.getElementById('hopper3Bottom').value = ticket.hopper3_bottom || '';
+                
+                // Load photos
+                const photoFields = [
+                    { id: 'Hopper1', data: ticket.photo_hopper1 },
+                    { id: 'Hopper2', data: ticket.photo_hopper2 },
+                    { id: 'Hopper3', data: ticket.photo_hopper3 },
+                    { id: 'Exterior', data: ticket.photo_exterior },
+                    { id: 'Scale1', data: ticket.photo_scale1 },
+                    { id: 'Scale2', data: ticket.photo_scale2 },
+                    { id: 'Scale3', data: ticket.photo_scale3 },
+                    { id: 'Scale4', data: ticket.photo_scale4 },
+                    { id: 'Scale5', data: ticket.photo_scale5 },
+                    { id: 'Affidavit', data: ticket.photo_affidavit }
+                ];
+                
+                photoFields.forEach(field => {
+                    if (field.data) {
+                        const preview = document.getElementById('preview' + field.id);
+                        preview.src = field.data;
+                        preview.classList.remove('hidden');
+                    }
+                });
+                
+                // Store ticket ID for update instead of insert
+                window.editingTicketId = ticketId;
+                
+                // Change submit button text
+                const submitBtn = document.querySelector('#mobileMode .btn-success');
+                submitBtn.textContent = 'Update Load Ticket';
+                submitBtn.onclick = function() { updateTicket(); };
+                
+                // Show cancel edit button if it doesn't exist
+                let cancelBtn = document.getElementById('cancelEditBtn');
+                if (!cancelBtn) {
+                    cancelBtn = document.createElement('button');
+                    cancelBtn.id = 'cancelEditBtn';
+                    cancelBtn.className = 'btn btn-primary';
+                    cancelBtn.textContent = 'Cancel Edit';
+                    cancelBtn.onclick = function() { cancelEdit(); };
+                    submitBtn.parentNode.appendChild(cancelBtn);
+                }
+                
+            } catch (error) {
+                console.error('Error loading ticket for edit:', error);
+                alert('Error loading ticket: ' + error.message);
+            }
+        }
+
+        // Update existing ticket
+        async function updateTicket() {
+            const ticketId = window.editingTicketId;
+            const railCarNumber = document.getElementById('railCarNumber').value;
+            
+            if (!railCarNumber) {
+                alert('Please enter a Rail Car Number');
+                return;
+            }
+
+            // Show loading overlay
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            const ticket = {
+                rail_car_number: railCarNumber,
+                ld_lmt: document.getElementById('ldLmt').value || null,
+                lt_wt: document.getElementById('ltWt').value || null,
+                load1_full: document.getElementById('load1Full').value || null,
+                load1_empty: document.getElementById('load1Empty').value || null,
+                load2_full: document.getElementById('load2Full').value || null,
+                load2_empty: document.getElementById('load2Empty').value || null,
+                load3_full: document.getElementById('load3Full').value || null,
+                load3_empty: document.getElementById('load3Empty').value || null,
+                load4_full: document.getElementById('load4Full').value || null,
+                load4_empty: document.getElementById('load4Empty').value || null,
+                load5_full: document.getElementById('load5Full').value || null,
+                load5_empty: document.getElementById('load5Empty').value || null,
+                hopper1_top1: document.getElementById('hopper1Top1').value || null,
+                hopper1_top2: document.getElementById('hopper1Top2').value || null,
+                hopper1_bottom: document.getElementById('hopper1Bottom').value || null,
+                hopper2_top1: document.getElementById('hopper2Top1').value || null,
+                hopper2_top2: document.getElementById('hopper2Top2').value || null,
+                hopper2_bottom: document.getElementById('hopper2Bottom').value || null,
+                hopper3_top1: document.getElementById('hopper3Top1').value || null,
+                hopper3_top2: document.getElementById('hopper3Top2').value || null,
+                hopper3_bottom: document.getElementById('hopper3Bottom').value || null,
+                photo_hopper1: document.getElementById('previewHopper1').src || null,
+                photo_hopper2: document.getElementById('previewHopper2').src || null,
+                photo_hopper3: document.getElementById('previewHopper3').src || null,
+                photo_exterior: document.getElementById('previewExterior').src || null,
+                photo_scale1: document.getElementById('previewScale1').src || null,
+                photo_scale2: document.getElementById('previewScale2').src || null,
+                photo_scale3: document.getElementById('previewScale3').src || null,
+                photo_scale4: document.getElementById('previewScale4').src || null,
+                photo_scale5: document.getElementById('previewScale5').src || null,
+                photo_affidavit: document.getElementById('previewAffidavit').src || null
+            };
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('tickets')
+                    .update(ticket)
+                    .eq('id', ticketId)
+                    .select();
+
+                if (error) throw error;
+                
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message';
+                successDiv.textContent = `✓ Load Ticket #${railCarNumber} updated successfully!`;
+                document.querySelector('#mobileMode').insertBefore(successDiv, document.querySelector('#mobileMode').firstChild);
+                
+                setTimeout(() => successDiv.remove(), 3000);
+                
+                // Reset to normal mode
+                cancelEdit();
+                
+            } catch (error) {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+                console.error('Error updating ticket:', error);
+                alert('Error updating ticket: ' + error.message);
+            }
+        }
+
+        // Cancel edit mode
+        function cancelEdit() {
+            delete window.editingTicketId;
+            
+            // Reset submit button
+            const submitBtn = document.querySelector('#mobileMode .btn-success');
+            submitBtn.textContent = 'Submit Load Ticket';
+            submitBtn.onclick = function() { submitTicket(); };
+            
+            // Remove cancel button
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            if (cancelBtn) {
+                cancelBtn.remove();
+            }
+            
+            // Clear form
+            clearForm();
+            
+            // Switch back to admin mode
+            document.getElementById('mobileMode').classList.add('hidden');
+            document.getElementById('adminMode').classList.remove('hidden');
+            document.getElementById('mobileBtn').classList.remove('active');
+            document.getElementById('adminBtn').classList.add('active');
+            
+            // Reload tickets
+            loadTickets();
         }
 
         // Upload document
