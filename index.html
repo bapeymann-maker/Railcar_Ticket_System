@@ -981,14 +981,20 @@
             ticketList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Loading tickets...</p>';
             
             try {
-                const { data: tickets, error } = await supabaseClient
+                const response = await supabaseClient
                     .from('tickets')
                     .select('*')
                     .order('created_at', { ascending: false });
 
+                // Extract just the data and error properties
+                const tickets = response.data;
+                const error = response.error;
+
                 if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
+                    const errorMsg = error.message || error.toString();
+                    console.log('Supabase error:', errorMsg);
+                    ticketList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error: ' + errorMsg + '</p>';
+                    return;
                 }
                 
                 if (!tickets || tickets.length === 0) {
@@ -1029,21 +1035,29 @@
                 ticketList.innerHTML = html;
                 
             } catch (error) {
-                console.error('Load error:', error);
-                ticketList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading tickets. Please try again.</p>';
+                const errorMsg = error.message || error.toString();
+                console.log('Load error:', errorMsg);
+                ticketList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading tickets: ' + errorMsg + '</p>';
             }
         }
 
         // View ticket details
         async function viewTicket(ticketId) {
             try {
-                const { data: ticket, error } = await supabaseClient
+                const response = await supabaseClient
                     .from('tickets')
                     .select('*')
                     .eq('id', ticketId)
                     .single();
 
-                if (error) throw error;
+                const ticket = response.data;
+                const error = response.error;
+
+                if (error) {
+                    const errorMsg = error.message || error.toString();
+                    alert('Error loading ticket: ' + errorMsg);
+                    return;
+                }
                 
                 document.getElementById('modalTitle').textContent = `Load Ticket #${ticket.rail_car_number}`;
                 
@@ -1182,13 +1196,20 @@
         // Edit ticket - populate form and switch to mobile mode
         async function editTicket(ticketId) {
             try {
-                const { data: ticket, error } = await supabaseClient
+                const response = await supabaseClient
                     .from('tickets')
                     .select('*')
                     .eq('id', ticketId)
                     .single();
 
-                if (error) throw error;
+                const ticket = response.data;
+                const error = response.error;
+
+                if (error) {
+                    const errorMsg = error.message || error.toString();
+                    alert('Error loading ticket: ' + errorMsg);
+                    return;
+                }
                 
                 // Close modal
                 closeModal();
